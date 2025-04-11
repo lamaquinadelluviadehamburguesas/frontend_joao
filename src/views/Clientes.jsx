@@ -13,6 +13,8 @@ const Clientes = () => {
   const estadoInicialCliente = { id_cliente: null, primer_nombre: '', celular: '', cedula: '' };
   const [nuevoCliente, setNuevoCliente] = useState(estadoInicialCliente);
   const [textoBusqueda, setTextoBusqueda] = useState("");
+  const [paginaActual, establecerPaginaActual] = useState(1);
+  const elementosPorPagina = 3;
 
   const obtenerClientes = async () => {
     try {
@@ -33,7 +35,9 @@ const Clientes = () => {
   }, []);
 
   const handleBuscar = (texto) => {
-    setTextoBusqueda(texto); // Aseguramos que el estado se actualice
+    setTextoBusqueda(texto);
+    establecerPaginaActual(1);
+    
     if (texto.trim() === "") {
       setClientesFiltrados(listaClientes);
     } else {
@@ -93,6 +97,11 @@ const Clientes = () => {
     }
   };
 
+  const clientesPaginados = clientesFiltrados.slice(
+    (paginaActual - 1) * elementosPorPagina,
+    paginaActual * elementosPorPagina
+  );
+
   return (
     <Container className="mt-5">
       <h4>Clientes</h4>
@@ -110,7 +119,15 @@ const Clientes = () => {
 
       {errorCarga && <Alert variant="danger" className="mt-3">{errorCarga}</Alert>}
 
-      <TablaClientes clientes={clientesFiltrados} cargando={cargando} error={errorCarga} />
+      <TablaClientes 
+        clientes={clientesPaginados} 
+        cargando={cargando} 
+        error={errorCarga} 
+        totalElementos={clientesFiltrados.length}
+        elementosPorPagina={elementosPorPagina}
+        paginaActual={paginaActual}
+        establecerPaginaActual={establecerPaginaActual}
+      />
 
       <ModalRegistroCliente
         mostrarModal={mostrarModal}

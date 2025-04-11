@@ -1,4 +1,3 @@
-// Importaciones necesarias para la vista
 import React, { useState, useEffect } from 'react';
 import TablaVentas from '../components/ventas/TablaVentas';
 import CuadroBusquedas from '../components/busuqedas/CuadroBusquedas';
@@ -6,17 +5,16 @@ import { Container, Button, Alert } from "react-bootstrap";
 // Si tienes un ModalRegistroVenta, descomenta la siguiente línea:
 // import ModalRegistroVenta from '../components/ventas/ModalRegistroVenta';
 
-// Declaración del componente Ventas
 const Ventas = () => {
-  // Estados para manejar los datos, carga y errores
-  const [listaVentas, setListaVentas] = useState([]);     // Almacena todos los datos de la API
-  const [ventasFiltradas, setVentasFiltradas] = useState([]); // Almacena las ventas filtradas
-  const [cargando, setCargando] = useState(true);         // Controla el estado de carga
-  const [errorCarga, setErrorCarga] = useState(null);     // Maneja errores de la petición
-  const [textoBusqueda, setTextoBusqueda] = useState(""); // Almacena el texto de búsqueda
-  const [mostrarModal, setMostrarModal] = useState(false); // Controla la visibilidad del modal
+  const [listaVentas, setListaVentas] = useState([]);
+  const [ventasFiltradas, setVentasFiltradas] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [errorCarga, setErrorCarga] = useState(null);
+  const [textoBusqueda, setTextoBusqueda] = useState("");
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [paginaActual, establecerPaginaActual] = useState(1);
+  const elementosPorPagina = 3;
 
-  // Lógica de obtención de datos con useEffect
   useEffect(() => {
     const obtenerVentas = async () => {
       try {
@@ -25,33 +23,33 @@ const Ventas = () => {
           throw new Error('Error al cargar las ventas');
         }
         const datos = await respuesta.json();
-        setListaVentas(datos);      // Actualiza el estado con todos los datos
-        setVentasFiltradas(datos);  // Inicializa las ventas filtradas con todos los datos
-        setCargando(false);         // Indica que la carga terminó
+        setListaVentas(datos);
+        setVentasFiltradas(datos);
+        setCargando(false);
       } catch (error) {
-        setErrorCarga(error.message); // Guarda el mensaje de error
-        setCargando(false);         // Termina la carga aunque haya error
+        setErrorCarga(error.message);
+        setCargando(false);
       }
     };
-    obtenerVentas();              // Ejecuta la función al montar el componente
-  }, []);                         // Array vacío para que solo se ejecute una vez
+    obtenerVentas();
+  }, []);
 
-  // Función de búsqueda
   const handleBuscar = (texto) => {
     setTextoBusqueda(texto);
+    establecerPaginaActual(1);
+    
     if (texto.trim() === "") {
       setVentasFiltradas(listaVentas);
     } else {
       const filtrados = listaVentas.filter(venta => 
         (venta.id_venta && venta.id_venta.toString().includes(texto)) ||
-        (venta.cliente && venta.cliente.toLowerCase().includes(texto.toLowerCase())) ||
-        (venta.fecha && venta.fecha.includes(texto))
+        (venta.nombre_cliente && venta.nombre_cliente.toLowerCase().includes(texto.toLowerCase())) ||
+        (venta.fecha_venta && venta.fecha_venta.includes(texto))
       );
       setVentasFiltradas(filtrados);
     }
   };
 
-  // Función para agregar una nueva venta (ejemplo básico)
   const agregarVenta = async (nuevaVenta) => {
     try {
       const respuesta = await fetch('http://localhost:3000/api/ventas', {
@@ -62,7 +60,6 @@ const Ventas = () => {
 
       if (!respuesta.ok) throw new Error('Error al agregar la venta');
 
-      // Refrescar la lista después de agregar
       const datosActualizados = await fetch('http://localhost:3000/api/ventas').then(res => res.json());
       setListaVentas(datosActualizados);
       setVentasFiltradas(datosActualizados);
@@ -73,7 +70,11 @@ const Ventas = () => {
     }
   };
 
-  // Renderizado de la vista
+  const ventasPaginadas = ventasFiltradas.slice(
+    (paginaActual - 1) * elementosPorPagina,
+    paginaActual * elementosPorPagina
+  );
+
   return (
     <>
       <Container className="mt-5">
@@ -97,11 +98,14 @@ const Ventas = () => {
 
         {errorCarga && <Alert variant="danger" className="mt-3">{errorCarga}</Alert>}
 
-        {/* Pasa los estados como props al componente TablaVentas */}
         <TablaVentas
-          ventas={ventasFiltradas}
+          ventas={ventasPaginadas}
           cargando={cargando}
           error={errorCarga}
+          totalElementos={ventasFiltradas.length}
+          elementosPorPagina={elementosPorPagina}
+          paginaActual={paginaActual}
+          establecerPaginaActual={establecerPaginaActual}
         />
 
         {/* Si tienes un ModalRegistroVenta, descomenta y ajusta las props necesarias */}
@@ -118,5 +122,4 @@ const Ventas = () => {
   );
 };
 
-// Exportación del componente
 export default Ventas;

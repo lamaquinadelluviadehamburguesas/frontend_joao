@@ -1,20 +1,17 @@
-// Importaciones necesarias para la vista
 import React, { useState, useEffect } from 'react';
 import TablaProductos from '../components/producto/TablaProductos';
 import ModalRegistroProducto from '../components/producto/ModalRegistroProducto';
 import CuadroBusquedas from '../components/busuqedas/CuadroBusquedas';
 import { Container, Button, Alert } from "react-bootstrap";
 
-// Declaración del componente Productos
 const Productos = () => {
-  // Estados para manejar los datos, carga y errores
-  const [listaProductos, setListaProductos] = useState([]); // Almacena todos los datos de la API
-  const [productosFiltrados, setProductosFiltrados] = useState([]); // Almacena los productos filtrados
-  const [cargando, setCargando] = useState(true);       // Controla el estado de carga
-  const [errorCarga, setErrorCarga] = useState(null);   // Maneja errores de la petición
+  const [listaProductos, setListaProductos] = useState([]);
+  const [productosFiltrados, setProductosFiltrados] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [errorCarga, setErrorCarga] = useState(null);
   const [listaCategorias, setListaCategorias] = useState([]);
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [textoBusqueda, setTextoBusqueda] = useState(""); // Almacena el texto de búsqueda
+  const [textoBusqueda, setTextoBusqueda] = useState("");
   const [nuevoProducto, setNuevoProducto] = useState({
     nombre_producto: '',
     descripcion_producto: '',
@@ -23,6 +20,8 @@ const Productos = () => {
     stock: '',
     imagen: ''
   });
+  const [paginaActual, establecerPaginaActual] = useState(1);
+  const elementosPorPagina = 3;
 
   const obtenerProductos = async () => {
     try {
@@ -31,22 +30,15 @@ const Productos = () => {
         throw new Error('Error al cargar los productos');
       }
       const datos = await respuesta.json();
-      setListaProductos(datos);      // Actualiza el estado con todos los datos
-      setProductosFiltrados(datos);  // Inicializa los productos filtrados con todos los datos
-      setCargando(false);           // Indica que la carga terminó
+      setListaProductos(datos);
+      setProductosFiltrados(datos);
+      setCargando(false);
     } catch (error) {
-      setErrorCarga(error.message); // Guarda el mensaje de error
-      setCargando(false);          // Termina la carga aunque haya error
+      setErrorCarga(error.message);
+      setCargando(false);
     }
   };
 
-  // Lógica de obtención de datos con useEffect
-  useEffect(() => {
-    obtenerProductos();
-    obtenerCategorias();           // Ejecuta las funciones al montar el componente
-  }, []);
-
-  // Obtener categorías para el dropdown
   const obtenerCategorias = async () => {
     try {
       const respuesta = await fetch('http://localhost:3000/api/categorias');
@@ -58,9 +50,15 @@ const Productos = () => {
     }
   };
 
-  // Función de búsqueda
+  useEffect(() => {
+    obtenerProductos();
+    obtenerCategorias();
+  }, []);
+
   const handleBuscar = (texto) => {
     setTextoBusqueda(texto);
+    establecerPaginaActual(1);
+    
     if (texto.trim() === "") {
       setProductosFiltrados(listaProductos);
     } else {
@@ -99,7 +97,7 @@ const Productos = () => {
 
       if (!respuesta.ok) throw new Error('Error al agregar el producto');
 
-      await obtenerProductos(); // Refresca la lista completa
+      await obtenerProductos();
       setNuevoProducto({
         nombre_producto: '',
         descripcion_producto: '',
@@ -110,13 +108,17 @@ const Productos = () => {
       });
       setMostrarModal(false);
       setErrorCarga(null);
-      handleBuscar(textoBusqueda); // Mantiene el filtro después de agregar
+      handleBuscar(textoBusqueda);
     } catch (error) {
       setErrorCarga(error.message);
     }
   };
 
-  // Renderizado de la vista
+  const productosPaginados = productosFiltrados.slice(
+    (paginaActual - 1) * elementosPorPagina,
+    paginaActual * elementosPorPagina
+  );
+
   return (
     <>
       <Container className="mt-5">
@@ -139,11 +141,14 @@ const Productos = () => {
 
         {errorCarga && <Alert variant="danger" className="mt-3">{errorCarga}</Alert>}
 
-        {/* Pasa los estados como props al componente TablaProductos */}
         <TablaProductos
-          Productos={productosFiltrados} // Usamos los productos filtrados
+          productos={productosPaginados}
           cargando={cargando}
           error={errorCarga}
+          totalElementos={productosFiltrados.length}
+          elementosPorPagina={elementosPorPagina}
+          paginaActual={paginaActual}
+          establecerPaginaActual={establecerPaginaActual}
         />
 
         <ModalRegistroProducto
@@ -160,5 +165,4 @@ const Productos = () => {
   );
 };
 
-// Exportación del componente
 export default Productos;
