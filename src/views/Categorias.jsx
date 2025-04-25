@@ -3,8 +3,11 @@ import TablaCategorias from '../components/categorias/TablaCategorias';
 import ModalRegistroCategoria from '../components/categorias/ModalRegistroCategoria';
 import CuadroBusquedas from '../components/busuqedas/CuadroBusquedas';
 import { Container, Button, Row, Col } from "react-bootstrap";
+<<<<<<< HEAD
 import ModalEliminacionCategoria from '../components/categorias/ModalEliminacionCategoria';
 import ModalActualizacionCategoria from '../components/categorias/ModalActualizacionCategoria';
+=======
+>>>>>>> ae8534a7bc98972a658763b397ff814dd9b0e404
 
 const Categorias = () => {
   const [listaCategorias, setListaCategorias] = useState([]);
@@ -19,10 +22,13 @@ const Categorias = () => {
   const [textoBusqueda, setTextoBusqueda] = useState("");
   const [paginaActual, establecerPaginaActual] = useState(1);
   const elementosPorPagina = 3;
+<<<<<<< HEAD
   const [mostrarModalEliminacion, setMostrarModalEliminacion] = useState(false);
   const [categoriaAEliminar, setCategoriaAEliminar] = useState(null);
   const [categoriaEditada, setCategoriaEditada] = useState(null);
   const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
+=======
+>>>>>>> ae8534a7bc98972a658763b397ff814dd9b0e404
 
   const obtenerCategorias = async () => {
     try {
@@ -98,77 +104,6 @@ const Categorias = () => {
     paginaActual * elementosPorPagina
   );
 
-  const eliminarCategoria = async () => {
-    if (!categoriaAEliminar) return;
-  
-    try {
-      const respuesta = await fetch(`/api/eliminarcategoria/${categoriaAEliminar.id_categoria}`, {
-        method: 'DELETE',
-      });
-  
-      if (!respuesta.ok) {
-        throw new Error('Error al eliminar la categoría');
-      }
-  
-      await obtenerCategorias(); // Refresca la lista
-      setMostrarModalEliminacion(false);
-      establecerPaginaActual(1); // Regresa a la primera página
-      setCategoriaAEliminar(null);
-      setErrorCarga(null);
-    } catch (error) {
-      setErrorCarga(error.message);
-    }
-  };
-   
-  const abrirModalEliminacion = (categoria) => {
-    setCategoriaAEliminar(categoria);
-    setMostrarModalEliminacion(true);
-  };
-
-  const manejarCambioInputEdicion = (e) => {
-    const { name, value } = e.target;
-    setCategoriaEditada(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const actualizarCategoria = async () => {
-    if (!categoriaEditada?.nombre_categoria || !categoriaEditada?.descripcion_categoria) {
-      setErrorCarga("Por favor, completa todos los campos antes de guardar.");
-      return;
-    }
-
-    try {
-      const respuesta = await fetch(`http://localhost:3000/api/actualizarcategoria/${categoriaEditada.id_categoria}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          nombre_categoria: categoriaEditada.nombre_categoria,
-          descripcion_categoria: categoriaEditada.descripcion_categoria,
-        }),
-      });
-
-      if (!respuesta.ok) {
-        throw new Error('Error al actualizar la categoría');
-      }
-
-      await obtenerCategorias();
-      setMostrarModalEdicion(false);
-      setCategoriaEditada(null);
-      setErrorCarga(null);
-    } catch (error) {
-      setErrorCarga(error.message);
-    }
-  };
-
-  const abrirModalEdicion = (categoria) => {
-    setCategoriaEditada(categoria);
-    setMostrarModalEdicion(true);
-  };
-
   return (
     <>
       <Container className="mt-5">
@@ -210,22 +145,6 @@ const Categorias = () => {
           agregarCategoria={agregarCategoria}
           errorCarga={errorCarga}
         />
-        
-        <ModalEliminacionCategoria
-          mostrarModalEliminacion={mostrarModalEliminacion}
-          setMostrarModalEliminacion={setMostrarModalEliminacion}
-          eliminarCategoria={eliminarCategoria}
-        />
-
-        <ModalActualizacionCategoria
-          mostrarModalEdicion={mostrarModalEdicion}
-          setMostrarModalEdicion={setMostrarModalEdicion}
-          categoriaEditada={categoriaEditada}
-          manejarCambioInputEdicion={manejarCambioInputEdicion}
-          actualizarCategoria={actualizarCategoria}
-          errorCarga={errorCarga}
-        />
-
       </Container>
     </>
   );

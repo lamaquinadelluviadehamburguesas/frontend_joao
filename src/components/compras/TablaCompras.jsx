@@ -1,5 +1,9 @@
 import React from 'react';
+<<<<<<< HEAD
 import { Table,} from 'react-bootstrap';
+=======
+import { Table } from 'react-bootstrap';
+>>>>>>> ae8534a7bc98972a658763b397ff814dd9b0e404
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Paginacion from '../ordenamiento/Paginacion';
 
